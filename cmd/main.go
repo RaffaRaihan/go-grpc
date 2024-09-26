@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 
+	"go-grpc/cmd/config"
 	"go-grpc/cmd/services"
 	produkPb "go-grpc/pb/produk"
 
@@ -15,14 +16,19 @@ const(
 )
 
 func main() {
+	// listening port
 	netlisten, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("Failed to %v", err.Error())
 	}
 
+	// Connect Database
+	database := config.ConnectDatabase()
+
+	// Set Grpc Server
 	grpcServer := grpc.NewServer()
-	produkService := services.ProdukService{}
-	produkPb.RegisterProdukServiceServer(grpcServer, &produkService)
+	produkService := services.ProdukService{DB: database}
+	produkPb.RegisterProductClientServer(grpcServer, &produkService)
 
 	log.Println("Server started at", netlisten.Addr())
 	if err := grpcServer.Serve(netlisten); err != nil {

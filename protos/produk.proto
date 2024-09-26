@@ -1,7 +1,7 @@
 syntax ="proto3";
 package go_grpc;
 
-option go_package = "pb/produk";
+option go_package = "/pb/produk";
 
 service ProductClient {
     rpc GetProduks(Empty) returns(Product);
