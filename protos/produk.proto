@@ -28,11 +28,12 @@ message Product{
 }
 
 message Spesifikasi{
-    string procesor = 1;
-    string ram = 2;
-    string penyimpanan = 3;
-    string layar = 4;
-    string grafis = 5;
+    int64 id_spesifikasi = 1;
+    string procesor = 2;
+    string ram = 3;
+    string penyimpanan = 4;
+    string layar = 5;
+    string grafis = 6;
 }
 
 message Ulasan{

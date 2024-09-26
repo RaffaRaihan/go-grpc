@@ -17,11 +17,12 @@ type ProdukService struct{
 
 func (p *ProdukService) GetProduks(context.Context, *produkPb.Empty) (*produkPb.Product, error) {
 	
-	var produk []*produkPb.Product
+	var produk produkPb.Product
 
-	rows, err := p.DB.Table("produk AS p").
-		Joins("LEFT JOIN ulasan AS u ON u.id_ulasan = p.ulasan_id").
-		Select("p.id","p.namaproduk","p.harga","p.kategori","p.stok","u.id_ulasan").
+	rows, err := p.DB.Table("spesifikasi AS s","ulasan AS u").
+		Joins("LEFT JOIN produk AS p ON p.id = s.produk_id").
+		Joins("LEFT JOIN produk AS p ON p.id = u.produk_id").
+		Select("p.id", "p.nama_produk", "p.kategori", "p.harga", "p.stok", "p.deskripsi", "s.id", "p.merek", "p.tanggal_rilis", "p.rating", "u.id_ulasan").
 		Rows()
 
 	if err != nil {
@@ -30,18 +31,31 @@ func (p *ProdukService) GetProduks(context.Context, *produkPb.Empty) (*produkPb.
 	defer rows.Close()
 
 	for rows.Next() {
-		var produk *produkPb.Product
-		var ulasan *produkPb.Ulasan
+		var product produkPb.Product
+		var spesifikasi produkPb.Spesifikasi
+		var ulasan produkPb.Ulasan
 
-		if rows.Scan(&produk.Id, &produk.NamaProduk, &produk.Harga, &produk.Kategori, &produk.Stok, &ulasan.IdUlasan); err != nil {
-			log.Fatalf("Gagal mengambil row data %v",err.Error())
+		if err := rows.Scan(product.Id, product.NamaProduk, product.Kategori, product.Harga, product.Stok, product.Deskripsi, spesifikasi.IdSpesifikasi, product.Merek, product.TanggalRilis, product.Rating, ulasan.IdUlasan); err != nil{
+			log.Fatalf("Gagal mengambil data")
 		}
-		produk.Ulasan = ulasan
-		produk = append(produk, &produk)
+		product.Spesifikasi = &spesifikasi
+		product.Ulasan = &ulasan
+		product = append(product, &produk)
 	}
 
 	response := &produkPb.Product{
-		Ulasan: []*produkPb.Ulasan{},
+		Id: produk.Id,
+		NamaProduk: produk.NamaProduk,
+		Kategori: produk.Kategori,
+		Harga: produk.Harga,
+		Stok: produk.Stok,
+		Deskripsi: produk.Deskripsi,
+		Spesifikasi: produk.Spesifikasi,
+		Merek: produk.Merek,
+		TanggalRilis: produk.TanggalRilis,
+		Rating: produk.Rating,
+		Ulasan: produk.Ulasan,
 	}
+
 	return response, nil
 }
